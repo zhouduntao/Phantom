@@ -3,6 +3,7 @@ package com.tony.phantom;
 import android.app.Instrumentation;
 import android.content.Context;
 
+import com.tony.phantom.hook.HookActivityThreadHandler;
 import com.tony.phantom.hook.InstrumentationDelegate;
 import com.tony.phantom.util.LogUtils;
 import com.tony.phantom.util.SingletonUtils;
@@ -25,23 +26,31 @@ public class PantomCore {
 
 
     public static PantomCore get() {
-        return SingletonUtils.checkSingleton(PantomCore.class, sInstance);
+        return sInstance = SingletonUtils.checkSingleton(PantomCore.class, sInstance);
     }
 
     public static void install(Context context) {
         sContext = context.getApplicationContext();
         try {
-            Class<?> clazz = Class.forName("android.app.ActivityThread");
-            Method method = clazz.getMethod("currentActivityThread");
+            Class<?> activityThreadClass = Class.forName("android.app.ActivityThread");
+            Method method = activityThreadClass.getMethod("currentActivityThread");
             Object activityThread = method.invoke(null);
 
-            Method insMethod = clazz.getMethod("getInstrumentation");
+
+            Method insMethod = activityThreadClass.getMethod("getInstrumentation");
             Object instrumentation = insMethod.invoke(activityThread);
 
-            Field instrumentationF = clazz.getDeclaredField("mInstrumentation");
+            Field instrumentationF = activityThreadClass.getDeclaredField("mInstrumentation");
             InstrumentationDelegate delegate = new InstrumentationDelegate((Instrumentation) instrumentation);
             instrumentationF.setAccessible(true);
             instrumentationF.set(activityThread,delegate);
+
+
+            Field mHField = activityThreadClass.getDeclaredField("mH");
+            mHField.setAccessible(true);
+            Object mH = mHField.get(activityThread);
+            mHField.set(activityThread,new HookActivityThreadHandler((android.os.Handler) mH));
+
 
             LogUtils.d(TAG, "activitythread :" + activityThread);
             LogUtils.d(TAG, "instrumentation :" + instrumentation);
