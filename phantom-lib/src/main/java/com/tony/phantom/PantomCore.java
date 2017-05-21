@@ -2,8 +2,9 @@ package com.tony.phantom;
 
 import android.app.Instrumentation;
 import android.content.Context;
+import android.os.Handler;
 
-import com.tony.phantom.hook.HookActivityThreadHandler;
+import com.tony.phantom.hook.HookHandlerCallback;
 import com.tony.phantom.hook.InstrumentationDelegate;
 import com.tony.phantom.util.LogUtils;
 import com.tony.phantom.util.SingletonUtils;
@@ -48,9 +49,11 @@ public class PantomCore {
 
             Field mHField = activityThreadClass.getDeclaredField("mH");
             mHField.setAccessible(true);
-            Object mH = mHField.get(activityThread);
-            mHField.set(activityThread,new HookActivityThreadHandler((android.os.Handler) mH));
+            Field callbackField = Handler.class.getDeclaredField("mCallback");
+            callbackField.setAccessible(true);
 
+            Object mH = mHField.get(activityThread);
+            callbackField.set(mH,new HookHandlerCallback((Handler) mH));
 
             LogUtils.d(TAG, "activitythread :" + activityThread);
             LogUtils.d(TAG, "instrumentation :" + instrumentation);
