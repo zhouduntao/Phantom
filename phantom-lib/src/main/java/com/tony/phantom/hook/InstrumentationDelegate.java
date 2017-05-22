@@ -42,10 +42,7 @@ public class InstrumentationDelegate extends Instrumentation {
 //            intent.setComponent(component);
 
             ComponentName targetComponent = intent.getComponent();
-            if (options == null) {
-                options = new Bundle();
-            }
-            options.putParcelable(Constant.Key.TARGET_COMPONNET, targetComponent);
+            intent.putExtra(Constant.Key.TARGET_COMPONNET, targetComponent);
 
             ComponentName proxyComponnet = new ComponentName(who, ProxyActivity.class.getName());
             intent.setComponent(proxyComponnet);
