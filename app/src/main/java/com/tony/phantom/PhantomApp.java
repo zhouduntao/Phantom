@@ -24,6 +24,6 @@ public class PhantomApp extends Application {
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
         LogUtils.d(TAG, "attachBaseContext");
-        PantomCore.install(this);
+        PantomCore.get().install(base);
     }
 }

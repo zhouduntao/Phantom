@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
-import com.tony.phantom.framework.ProxyActivity;
 import com.tony.phantom.util.LogUtils;
 
 public class MainActivity extends AppCompatActivity {
@@ -20,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void startActivity(View view) {
         Intent intent = new Intent();
-        intent.setClass(this, ProxyActivity.class);
+        intent.setClass(this, TestPluginActivity.class);
         startActivity(intent);
     }
 }

@@ -30,7 +30,7 @@ public class PantomCore {
         return sInstance = SingletonUtils.checkSingleton(PantomCore.class, sInstance);
     }
 
-    public static void install(Context context) {
+    public  void install(Context context) {
         sContext = context.getApplicationContext();
         try {
             Class<?> activityThreadClass = Class.forName("android.app.ActivityThread");
