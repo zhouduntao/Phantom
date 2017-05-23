@@ -36,7 +36,14 @@ public class HookHandlerCallback implements Handler.Callback{
                 ComponentName targetComponentName = intent.getParcelableExtra(Constant.Key.TARGET_COMPONNET);
                 if (targetComponentName != null){
                     intent.setComponent(targetComponentName);
-                    return true;
+//                    String name = targetComponentName.getClassName();
+//                    try {
+//                        Object o = Class.forName(name).newInstance();
+//                        LogUtils.d(TAG, "handleMessage targetComponentName: " + o);
+//                    } catch (InstantiationException e) {
+//                        e.printStackTrace();
+//                    }
+//                    return true;
                 }
                 LogUtils.d(TAG, "handleMessage targetComponentName: " + targetComponentName);
             } catch (ClassNotFoundException e) {
