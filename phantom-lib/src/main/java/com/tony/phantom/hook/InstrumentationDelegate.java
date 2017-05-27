@@ -37,10 +37,6 @@ public class InstrumentationDelegate extends Instrumentation {
             LogUtils.d(TAG, "execStartActivity you a be hook");
             Class<?> clazz = Instrumentation.class;
 
-//            ComponentName component = new ComponentName("com.tony.phantom", "com.tony.phantom.ProxyActivity");
-//            intent.setComponent(null);
-//            intent.setComponent(component);
-
             ComponentName targetComponent = intent.getComponent();
             intent.putExtra(Constant.Key.TARGET_COMPONNET, targetComponent);
 

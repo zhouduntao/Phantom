@@ -12,7 +12,5 @@ public class CompatibilityInfo {
     public static Class<?> Type = RefUtil.getClass(hookClassName);
     public static RefObject DEFAULT_COMPATIBILITY_INFO;
 
-    static {
-        DEFAULT_COMPATIBILITY_INFO = new RefObject(Type, "DEFAULT_COMPATIBILITY_INFO", null);
-    }
+
 }

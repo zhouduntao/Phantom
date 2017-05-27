@@ -2,7 +2,6 @@ package com.tony.phantom;
 
 import android.app.Instrumentation;
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
@@ -10,30 +9,21 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.util.Log;
 
-import com.tony.phantom.framework.PhantomClassLoader;
 import com.tony.phantom.hook.ActivityThread;
-import com.tony.phantom.hook.CompatibilityInfo;
-import com.tony.phantom.hook.ContextImpl;
-import com.tony.phantom.hook.HookHandlerCallback;
+import com.tony.phantom.hook.HCallbackHook;
 import com.tony.phantom.hook.HookIActivityManager;
 import com.tony.phantom.hook.InstrumentationDelegate;
-import com.tony.phantom.hook.LoadedApk;
-import com.tony.phantom.hook.PackageParser;
-import com.tony.phantom.hook.PackageUserState;
-import com.tony.phantom.reflect.RefUtil;
 import com.tony.phantom.util.LogUtils;
 import com.tony.phantom.util.SingletonUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Map;
 
 import dalvik.system.DexClassLoader;
 import dalvik.system.DexFile;
@@ -51,6 +41,7 @@ public class PantomCore {
     public static Context sContext;
     private static PantomCore sInstance;
     private Object mLoadApk;
+    private Object mMainThread;
 
 
     public static PantomCore get() {
@@ -60,16 +51,20 @@ public class PantomCore {
     public void attach(Context context) {
         sContext = context;
 
-        Object activityThread = ActivityThread.sCurrentActivityThread;
-
-        Instrumentation instrumentation = ActivityThread.mInstrumentation.get();
+        Object mainThread = getMainThread();
+//
+        Instrumentation instrumentation = ActivityThread.mInstrumentation.get(mainThread);
 
         InstrumentationDelegate delegate = new InstrumentationDelegate(instrumentation);
 
-        ActivityThread.mInstrumentation.set(activityThread, delegate);
+        ActivityThread.mInstrumentation.set(mainThread, delegate);
 
-        Handler mH = ActivityThread.mH.get();
-        RefUtil.on(Handler.class).field("mCallback").set(mH, new HookHandlerCallback(mH));
+        Handler mH = ActivityThread.mH.get(mainThread);
+
+        ActivityThread.H.mCallback.set(mH, new HCallbackHook(mH));
+
+        //replace resource
+
 
         LogUtils.d(TAG, "instrumentation :" + instrumentation);
 
@@ -120,13 +115,13 @@ public class PantomCore {
 //        } catch (IllegalAccessException e) {
 //            e.printStackTrace();
 //        }
-        try {
-            ContextImpl.mResources.getFiled().set(sContext,res);
-            Resources resources = sContext.getResources();
-            LogUtils.d(TAG,"install " + "resources " + resources);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            ContextImpl.mResources.getFiled().set(sContext, res);
+//            Resources resources = sContext.getResources();
+//            LogUtils.d(TAG, "install " + "resources " + resources);
+//        } catch (IllegalAccessException e) {
+//            e.printStackTrace();
+//        }
 //        hoams();
     }
 
@@ -195,30 +190,29 @@ public class PantomCore {
 
         // 替换
         dexElementArray.set(pathListObj, newElements);
-
     }
 
-    private void hookLoadApk(String pluginPath, String optimizedDirectory, String librarySearchPath, ClassLoader parent) {
-        //0 全部信息
-        Object parsePackage = PackageParser.parsePackage.invoke(RefUtil.newInstance(PackageParser.Type), new File(pluginPath), 0);
-
-        ApplicationInfo applicationInfo = (ApplicationInfo) PackageParser.generateApplicationInfo.invoke(null, parsePackage, 0, PackageUserState.newInstance());
-        applicationInfo.sourceDir = pluginPath;
-        applicationInfo.publicSourceDir = pluginPath;
-
-        Object loadApk = ActivityThread.getPackageInfoNoCheck.invoke(ActivityThread.sCurrentActivityThread, applicationInfo, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO.get());
-        Log.d(TAG, "loadApk " + loadApk.toString());
-
-        mLoadApk = loadApk;
+//    private void hookLoadApk(String pluginPath, String optimizedDirectory, String librarySearchPath, ClassLoader parent) {
+//        //0 全部信息
+//        Object parsePackage = PackageParser.parsePackage.invoke(RefUtil.newInstance(PackageParser.Type), new File(pluginPath), 0);
 //
-        PhantomClassLoader loader = new PhantomClassLoader(pluginPath, optimizedDirectory, librarySearchPath, parent);
-        Field aLoadedApkmClassLoaderFiled = LoadedApk.mClassLoader.getFiled();
-        RefUtil.on(aLoadedApkmClassLoaderFiled).set(loadApk, loader);
-
-        Map map = ActivityThread.mPackages.get();
-        map.put(applicationInfo.packageName, new WeakReference<>(loadApk));
-        map.put("com.tony.phantom", new WeakReference<>(loadApk));
-    }
+//        ApplicationInfo applicationInfo = (ApplicationInfo) PackageParser.generateApplicationInfo.invoke(null, parsePackage, 0, PackageUserState.newInstance());
+//        applicationInfo.sourceDir = pluginPath;
+//        applicationInfo.publicSourceDir = pluginPath;
+//
+//        Object loadApk = ActivityThread.getPackageInfoNoCheck.invoke(ActivityThread.sCurrentActivityThread, applicationInfo, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO.get());
+//        Log.d(TAG, "loadApk " + loadApk.toString());
+//
+//        mLoadApk = loadApk;
+////
+//        PhantomClassLoader loader = new PhantomClassLoader(pluginPath, optimizedDirectory, librarySearchPath, parent);
+//        Field aLoadedApkmClassLoaderFiled = LoadedApk.mClassLoader.getFiled();
+//        RefUtil.on(aLoadedApkmClassLoaderFiled).set(loadApk, loader);
+//
+//        Map map = ActivityThread.mPackages.get();
+//        map.put(applicationInfo.packageName, new WeakReference<>(loadApk));
+//        map.put("com.tony.phantom", new WeakReference<>(loadApk));
+//    }
 
     public AssetManager createAssetManager(String pluginPath) {
         try {
@@ -244,6 +238,13 @@ public class PantomCore {
         AssetManager am = createAssetManager(pluginPath);
         Resources superRes = sContext.getResources();
         return new Resources(am, superRes.getDisplayMetrics(), superRes.getConfiguration());
+    }
+
+    public Object getMainThread() {
+        if (mMainThread == null) {
+            mMainThread = ActivityThread.currentActivityThread.call();
+        }
+        return mMainThread;
     }
 
 }

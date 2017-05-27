@@ -25,10 +25,11 @@ public class PhantomApp extends Application {
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
+
         LogUtils.d(TAG, "attachBaseContext");
         PantomCore.get().attach(base);
 
-//        String optimizedDirectory = getFilesDir().getAbsolutePath();
-//        PantomCore.get().install("com.tony.testplugin", pluginPath, optimizedDirectory, "", getClassLoader());
+        String optimizedDirectory = getFilesDir().getAbsolutePath();
+        PantomCore.get().install("com.tony.testplugin", pluginPath, optimizedDirectory, "", getClassLoader());
     }
 }

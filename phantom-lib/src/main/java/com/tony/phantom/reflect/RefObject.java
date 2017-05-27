@@ -1,5 +1,7 @@
 package com.tony.phantom.reflect;
 
+import com.tony.phantom.exception.PhantomReflectException;
+
 import java.lang.reflect.Field;
 
 /**
@@ -8,29 +10,29 @@ import java.lang.reflect.Field;
 
 public class RefObject<T> implements Refable {
 
-    private T mObject;
     private Field mFiled;
 
-    public RefObject(String className, String fieldName, Object Obj) {
-        this(RefUtil.getClass(className), fieldName, Obj);
-    }
-
-    public RefObject(Class<?> clazz, String fieldName, Object Obj) {
-        mFiled = RefUtil.on(clazz).getField(fieldName);
-        if (Obj != null){
-            mObject = (T) RefUtil.on(mFiled).get(Obj);
+    public RefObject(Class<?> clazz, Field filed) {
+        mFiled = RefUtil.on(clazz).getField(filed.getName());
+        if (mFiled == null) {
+            new PhantomReflectException("can'n find field:" + filed.getName());
         }
     }
 
-    public Field getFiled(){
+    public Field getFiled() {
         return mFiled;
     }
 
-    public T get() {
-        return mObject;
+    public T get(Object obj) {
+        try {
+            return (T) mFiled.get(obj);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    public void set(Object object,Object value) {
+    public void set(Object object, Object value) {
         try {
             mFiled.set(object, value);
         } catch (IllegalAccessException e) {

@@ -1,5 +1,6 @@
 package com.tony.phantom.reflect;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -13,11 +14,21 @@ public class RefUtil {
     private Class mClass;
     private Method mMethod;
     private Field mField;
+    private Object mObject;
 
     public static Class getClass(String className) {
         try {
             return Class.forName(className);
         } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static Constructor<?> getConstructor(Class<?> clazz, Class<?>... parameterTypes) {
+        try {
+            return clazz.getConstructor(parameterTypes);
+        } catch (NoSuchMethodException e) {
             e.printStackTrace();
         }
         return null;
@@ -34,10 +45,28 @@ public class RefUtil {
         return null;
     }
 
+    public static Object newInstance(Constructor<?> constructor, Object... args) {
+        try {
+            return constructor.newInstance(args);
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     public static RefUtil on(Field field) {
         return new RefUtil(field);
     }
+
+    public static RefUtil on(Object obj) {
+        return new RefUtil(obj);
+    }
+
 
     public static RefUtil on(String className) {
         return new RefUtil(RefUtil.getClass(className));
@@ -54,6 +83,11 @@ public class RefUtil {
 
     private RefUtil(Class<?> clazz) {
         mClass = clazz;
+    }
+
+    private RefUtil(Object object) {
+        mObject = object;
+        mClass = object.getClass();
     }
 
     private RefUtil(Method method) {
@@ -83,6 +117,7 @@ public class RefUtil {
         method(methodName, parameterTypes);
         return mMethod;
     }
+
 
     public RefUtil field(String fieldName) {
         try {
@@ -141,4 +176,9 @@ public class RefUtil {
         }
         return null;
     }
+
+    public Class<?> getType() {
+        return mClass;
+    }
+
 }

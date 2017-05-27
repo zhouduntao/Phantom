@@ -13,8 +13,4 @@ public class LoadedApk {
     public static Class<?> Type = RefUtil.getClass(hookClassName);
     public static RefObject<ClassLoader> mClassLoader;
 
-    static {
-        mClassLoader = new RefObject(Type, "mClassLoader", null);
-    }
-
 }
