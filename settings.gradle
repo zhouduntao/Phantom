@@ -1,1 +1,1 @@
-include ':app', ':phantom-lib'
+include ':app', ':phantom-lib', ':testplugindemo'

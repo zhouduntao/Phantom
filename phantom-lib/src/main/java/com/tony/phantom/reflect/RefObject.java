@@ -1,6 +1,6 @@
 package com.tony.phantom.reflect;
 
-import com.tony.phantom.exception.PhantomReflectException;
+import com.tony.phantom.reflect.base.BaseRefObject;
 
 import java.lang.reflect.Field;
 
@@ -8,19 +8,11 @@ import java.lang.reflect.Field;
  * Created by zhouduntao on 2017/5/23.
  */
 
-public class RefObject<T> implements Refable {
+public class RefObject<T> extends BaseRefObject {
 
-    private Field mFiled;
 
     public RefObject(Class<?> clazz, Field filed) {
-        mFiled = RefUtil.on(clazz).getField(filed.getName());
-        if (mFiled == null) {
-            new PhantomReflectException("can'n find field:" + filed.getName());
-        }
-    }
-
-    public Field getFiled() {
-        return mFiled;
+        super(clazz, filed);
     }
 
     public T get(Object obj) {

@@ -1,6 +1,10 @@
 package com.tony.phantom.hook;
 
+import android.content.pm.PackageManager;
+import android.content.res.Resources;
+
 import com.tony.phantom.reflect.RefClass;
+import com.tony.phantom.reflect.RefMethod;
 import com.tony.phantom.reflect.RefObject;
 
 /**
@@ -9,7 +13,9 @@ import com.tony.phantom.reflect.RefObject;
 
 public class ContextImpl {
 
-    public static Class<?> TYPE = RefClass.load(ActivityThread.class, "android.app.ContextImpl");
-    public static RefObject mResources;
+    public static Class<?> TYPE = RefClass.load(ContextImpl.class, "android.app.ContextImpl");
+    public static RefObject<Resources> mResources;
+    public static RefObject<PackageManager> mPackageManager;
+    public static RefMethod<PackageManager> getPackageManager;
 
 }

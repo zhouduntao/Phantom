@@ -1,7 +1,9 @@
 package com.tony.phantom.hook;
 
 import android.content.ComponentName;
+import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.Message;
 
@@ -25,6 +27,10 @@ public class HCallbackHook implements Handler.Callback{
 
     @Override
     public boolean handleMessage(Message msg) {
+
+
+
+
         LogUtils.d(TAG, "handleMessage " + "");
         if (msg.what == 100){
             Object obj = msg.obj;

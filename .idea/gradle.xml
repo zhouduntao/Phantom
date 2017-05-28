@@ -10,6 +10,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/phantom-lib" />
+            <option value="$PROJECT_DIR$/testplugindemo" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

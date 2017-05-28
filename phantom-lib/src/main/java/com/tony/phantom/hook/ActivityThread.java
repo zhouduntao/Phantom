@@ -8,6 +8,7 @@ import com.tony.phantom.reflect.RefClass;
 import com.tony.phantom.reflect.RefMethod;
 import com.tony.phantom.reflect.RefObject;
 import com.tony.phantom.reflect.RefStaticMethod;
+import com.tony.phantom.reflect.RefStaticObject;
 
 import java.util.Map;
 
@@ -25,6 +26,8 @@ public class ActivityThread {
     public static RefObject<ArrayMap> mResourcePackages;
     public static RefObject<Map> mPackages;
     public static RefMethod getPackageInfoNoCheck;
+    public static RefMethod getPackageManager;
+    public static RefStaticObject sPackageManager;
 
     public static class H {
         public static Class<?> TYPE = RefClass.load(H.class, "android.os.Handler");

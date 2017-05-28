@@ -2,8 +2,8 @@ package com.tony.phantom;
 
 import android.app.Application;
 import android.content.Context;
-import android.os.Environment;
 
+import com.tony.phantom.framework.PluginManager;
 import com.tony.phantom.util.LogUtils;
 
 /**
@@ -14,7 +14,7 @@ import com.tony.phantom.util.LogUtils;
  */
 public class PhantomApp extends Application {
     private static final String TAG = PhantomApp.class.getName();
-    private String pluginPath = Environment.getExternalStorageDirectory().getPath() + "/phantom/testPlugin.apk";
+
 
     @Override
     public void onCreate() {
@@ -27,9 +27,9 @@ public class PhantomApp extends Application {
         super.attachBaseContext(base);
 
         LogUtils.d(TAG, "attachBaseContext");
-        PantomCore.get().attach(base);
-
+        PhantomCore.get().attach(base);
+//
         String optimizedDirectory = getFilesDir().getAbsolutePath();
-        PantomCore.get().install("com.tony.testplugin", pluginPath, optimizedDirectory, "", getClassLoader());
+        PhantomCore.get().install(PluginManager.get().getPluginPkgName(), PluginManager.get().getPluginPath(), optimizedDirectory, "", getClassLoader());
     }
 }

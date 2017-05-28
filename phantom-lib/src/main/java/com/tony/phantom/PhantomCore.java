@@ -1,7 +1,9 @@
 package com.tony.phantom;
 
 import android.app.Instrumentation;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
@@ -9,6 +11,8 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.util.Log;
 
+import com.tony.phantom.framework.PluginManager;
+import com.tony.phantom.help.packageParserCompat.PackageParserCompat;
 import com.tony.phantom.hook.ActivityThread;
 import com.tony.phantom.hook.HCallbackHook;
 import com.tony.phantom.hook.HookIActivityManager;
@@ -21,6 +25,7 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -35,17 +40,17 @@ import dalvik.system.DexFile;
  *          <p><strong>des<></p>
  * @since 2017/5/8 19:16
  */
-public class PantomCore {
+public class PhantomCore {
 
-    private static final String TAG = PantomCore.class.getName();
+    private static final String TAG = PhantomCore.class.getName();
     public static Context sContext;
-    private static PantomCore sInstance;
+    private static PhantomCore sInstance;
     private Object mLoadApk;
     private Object mMainThread;
 
 
-    public static PantomCore get() {
-        return sInstance = SingletonUtils.checkSingleton(PantomCore.class, sInstance);
+    public static PhantomCore get() {
+        return sInstance = SingletonUtils.checkSingleton(PhantomCore.class, sInstance);
     }
 
     public void attach(Context context) {
@@ -63,6 +68,37 @@ public class PantomCore {
 
         ActivityThread.H.mCallback.set(mH, new HCallbackHook(mH));
 
+        final Object iPackageManger = ActivityThread.sPackageManager.get();
+        Class<?> iPackageManagerInterface = null;
+
+        try {
+            iPackageManagerInterface = Class.forName("android.content.pm.IPackageManager");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+
+        Object proxyPackageManger = Proxy.newProxyInstance(iPackageManagerInterface.getClassLoader(), new Class[]{iPackageManagerInterface}, new InvocationHandler() {
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                LogUtils.d(TAG, "invoke " + "method:" + method.getName());
+                if (method.getName().equals("getActivityInfo")) {
+                    ComponentName arg = (ComponentName) args[0];
+                    String name = arg.getPackageName();
+                    if (name.equals(PluginManager.get().getPluginPkgName())) {
+                        LogUtils.d(TAG, "invoke " + "method:" + method.getName() + "com.demo.tony.testplugin");
+                        ActivityInfo info = PackageParserCompat.getActivityInfo();
+                        return info;
+                    }
+//                    return ;
+                }
+                return method.invoke(iPackageManger, args);
+            }
+        });
+
+        ActivityThread.sPackageManager.set(proxyPackageManger);
+
+
         //replace resource
 
 
@@ -78,8 +114,6 @@ public class PantomCore {
         PackageManager pm = sContext.getPackageManager();
         PackageInfo packageInfo = pm.getPackageArchiveInfo(pluginPath, PackageManager.GET_ACTIVITIES);
         Log.d(TAG, "install " + packageInfo.toString());
-
-//        hookLoadApk(pluginPath, optimizedDirectory, librarySearchPath, parent);
 
         try {
             patchClassLoader(parent, new File(pluginPath), new File(optimizedDirectory));
@@ -123,6 +157,13 @@ public class PantomCore {
 //            e.printStackTrace();
 //        }
 //        hoams();
+
+//        PackageParser.Package aPackage = PackageParserCompat.parsePackage(pluginFile, 0);
+    }
+
+    public Resources getResourse() {
+        Resources resources = createResources(PluginManager.get().getPluginPath());
+        return resources;
     }
 
     public void hoams() {
@@ -246,5 +287,17 @@ public class PantomCore {
         }
         return mMainThread;
     }
+
+    public String getCurrentProcess() {
+        return sContext.getApplicationInfo().processName;
+    }
+
+    public boolean isProxyProcess() {
+        if (getCurrentProcess().endsWith("proxy")) {
+            return true;
+        }
+        return false;
+    }
+
 
 }
