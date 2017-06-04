@@ -1,6 +1,8 @@
 package com.tony.phantom.hook;
 
 import android.app.Instrumentation;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Handler;
 import android.util.ArrayMap;
 
@@ -29,9 +31,17 @@ public class ActivityThread {
     public static RefMethod getPackageManager;
     public static RefStaticObject sPackageManager;
 
+
     public static class H {
         public static Class<?> TYPE = RefClass.load(H.class, "android.os.Handler");
         public static RefObject<Handler.Callback> mCallback;
+    }
+
+    public static class ActivityClientRecord {
+        public static Class<?> TYPE = RefClass.load(ActivityClientRecord.class, "android.app.ActivityThread$ActivityClientRecord");
+        public static RefObject<Intent> intent;
+        public static RefObject packageInfo;
+        public static RefObject<ActivityInfo> activityInfo;
     }
 
 }

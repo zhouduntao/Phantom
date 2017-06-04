@@ -1,19 +1,21 @@
 package com.tony.phantom;
 
+import android.app.ActivityManager;
 import android.app.Instrumentation;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.pm.ActivityInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.os.Handler;
+import android.os.Process;
 import android.util.Log;
 
 import com.tony.phantom.framework.PluginManager;
 import com.tony.phantom.help.packageParserCompat.PackageParserCompat;
 import com.tony.phantom.hook.ActivityThread;
+import com.tony.phantom.hook.ContextImpl;
 import com.tony.phantom.hook.HCallbackHook;
 import com.tony.phantom.hook.HookIActivityManager;
 import com.tony.phantom.hook.InstrumentationDelegate;
@@ -56,6 +58,8 @@ public class PhantomCore {
     public void attach(Context context) {
         sContext = context;
 
+        fixContext();
+
         Object mainThread = getMainThread();
 //
         Instrumentation instrumentation = ActivityThread.mInstrumentation.get(mainThread);
@@ -67,6 +71,25 @@ public class PhantomCore {
         Handler mH = ActivityThread.mH.get(mainThread);
 
         ActivityThread.H.mCallback.set(mH, new HCallbackHook(mH));
+
+
+        //replace resource
+
+
+        LogUtils.d(TAG, "instrumentation :" + instrumentation);
+
+    }
+
+    private void fixContext() {
+
+        int deep = 0;
+        while (sContext instanceof ContextWrapper) {
+            sContext = ((ContextWrapper) sContext).getBaseContext();
+            deep++;
+            if (deep >= 10) {
+                return;
+            }
+        }
 
         final Object iPackageManger = ActivityThread.sPackageManager.get();
         Class<?> iPackageManagerInterface = null;
@@ -86,7 +109,7 @@ public class PhantomCore {
                     ComponentName arg = (ComponentName) args[0];
                     String name = arg.getPackageName();
                     if (name.equals(PluginManager.get().getPluginPkgName())) {
-                        LogUtils.d(TAG, "invoke " + "method:" + method.getName() + "com.demo.tony.testplugin");
+                        LogUtils.d(TAG, "invoke " + "method:" + method.getName() + " com.demo.tony.testplugin");
                         ActivityInfo info = PackageParserCompat.getActivityInfo();
                         return info;
                     }
@@ -97,13 +120,11 @@ public class PhantomCore {
         });
 
         ActivityThread.sPackageManager.set(proxyPackageManger);
+        ContextImpl.mPackageManager.set(sContext, null);
 
+        ContextImpl.getPackageManager.call(sContext, null);
 
-        //replace resource
-
-
-        LogUtils.d(TAG, "instrumentation :" + instrumentation);
-
+//        ContextImpl.mBasePackageName.set(PluginManager.get().getHostPackageName());
     }
 
     public void install(String packageName, String pluginPath, String optimizedDirectory, String librarySearchPath, ClassLoader parent) {
@@ -111,9 +132,9 @@ public class PhantomCore {
         if (!pluginFile.exists()) {
             Log.e(TAG, "install " + "file not exists");
         }
-        PackageManager pm = sContext.getPackageManager();
-        PackageInfo packageInfo = pm.getPackageArchiveInfo(pluginPath, PackageManager.GET_ACTIVITIES);
-        Log.d(TAG, "install " + packageInfo.toString());
+//        PackageManager pm = sContext.getPackageManager();
+//        PackageInfo packageInfo = pm.getPackageArchiveInfo(pluginPath, PackageManager.GET_ACTIVITIES);
+//        Log.d(TAG, "install " + packageInfo.toString());
 
         try {
             patchClassLoader(parent, new File(pluginPath), new File(optimizedDirectory));
@@ -137,11 +158,11 @@ public class PhantomCore {
 //            Log.d(TAG, "install " + o.toString());
 
 
-        Resources res = createResources(pluginPath);
-//            Resources res = pm.getResourcesForApplication("com.tony.testplugin");
-        int identifier = res.getIdentifier("app_name", "string", packageName);
-        String string = res.getString(identifier);
-        Log.d(TAG, "install " + string);
+//        Resources res = createResources(pluginPath);
+////            Resources res = pm.getResourcesForApplication("com.tony.testplugin");
+//        int identifier = res.getIdentifier("app_name", "string", packageName);
+//        String string = res.getString(identifier);
+//        Log.d(TAG, "install " + string);
 //        } catch (ClassNotFoundException e) {
 //            e.printStackTrace();
 //        } catch (InstantiationException e) {
@@ -289,7 +310,14 @@ public class PhantomCore {
     }
 
     public String getCurrentProcess() {
-        return sContext.getApplicationInfo().processName;
+        int myPid = Process.myPid();
+        ActivityManager am = (ActivityManager) sContext.getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningAppProcessInfo info : am.getRunningAppProcesses()) {
+            if (info.pid == myPid) {
+                return info.processName;
+            }
+        }
+        return null;
     }
 
     public boolean isProxyProcess() {

@@ -16,6 +16,7 @@ public class ContextImpl {
     public static Class<?> TYPE = RefClass.load(ContextImpl.class, "android.app.ContextImpl");
     public static RefObject<Resources> mResources;
     public static RefObject<PackageManager> mPackageManager;
+    public static RefObject<String> mBasePackageName;
     public static RefMethod<PackageManager> getPackageManager;
 
 }

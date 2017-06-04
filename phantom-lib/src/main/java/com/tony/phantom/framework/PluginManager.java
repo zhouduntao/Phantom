@@ -12,6 +12,7 @@ public class PluginManager {
     private static PluginManager sInstance;
     private String pluginPath = Environment.getExternalStorageDirectory().getPath() + "/phantom/testplugindemo-debug.apk";
     private String pluginPkgName = "com.demo.tony.testplugindemo";
+    private String mHostPackageName = "com.tony.phantom";
 
     public static PluginManager get() {
         return sInstance = SingletonUtils.checkSingleton(PluginManager.class, sInstance);
@@ -23,5 +24,9 @@ public class PluginManager {
 
     public String getPluginPkgName() {
         return pluginPkgName;
+    }
+
+    public String getHostPackageName() {
+        return mHostPackageName;
     }
 }
