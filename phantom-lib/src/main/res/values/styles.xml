@@ -6,4 +6,8 @@
         <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
     </style>
 
+    <style name="PTheme2" parent="Theme.AppCompat.NoActionBar">
+
+    </style>
+
 </resources>

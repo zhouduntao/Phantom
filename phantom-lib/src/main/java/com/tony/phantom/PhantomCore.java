@@ -80,6 +80,7 @@ public class PhantomCore {
 
     }
 
+    @SuppressWarnings("all")
     private void fixContext() {
 
         int deep = 0;
@@ -108,11 +109,11 @@ public class PhantomCore {
                 if (method.getName().equals("getActivityInfo")) {
                     ComponentName arg = (ComponentName) args[0];
                     String name = arg.getPackageName();
-                    if (name.equals(PluginManager.get().getPluginPkgName())) {
+//                    if (name.equals(PluginManager.get().getPluginPkgName())) {
                         LogUtils.d(TAG, "invoke " + "method:" + method.getName() + " com.demo.tony.testplugin");
                         ActivityInfo info = PackageParserCompat.getActivityInfo();
                         return info;
-                    }
+//                    }
 //                    return ;
                 }
                 return method.invoke(iPackageManger, args);
@@ -122,7 +123,8 @@ public class PhantomCore {
         ActivityThread.sPackageManager.set(proxyPackageManger);
         ContextImpl.mPackageManager.set(sContext, null);
 
-        ContextImpl.getPackageManager.call(sContext, null);
+        Object[] o = null;
+        ContextImpl.getPackageManager.call(sContext, o);
 
 //        ContextImpl.mBasePackageName.set(PluginManager.get().getHostPackageName());
     }
