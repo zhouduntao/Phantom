@@ -2,6 +2,7 @@ package com.demo.tony.testplugindemo;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -21,6 +22,9 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, " onCreate: R R.layout.activity_main_test" + R.layout.activity_main_test);
         Log.d(TAG, " onCreate: R app name " + getString(R.string.app_name));
         Log.d(TAG, " onCreate: getResources " + getResources());
+
+        PackageManager manager = getPackageManager();
+        manager.getLaunchIntentForPackage()
 
     }
 

@@ -55,6 +55,10 @@ public class PhantomCore {
         return sInstance = SingletonUtils.checkSingleton(PhantomCore.class, sInstance);
     }
 
+    public static Context getContext(){
+        return sContext;
+    }
+
     public void attach(Context context) {
         sContext = context;
 

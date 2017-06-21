@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     public void startActivity(View view) {
         Intent intent = new Intent();
         intent.setClassName(PluginManager.get().getPluginPkgName(), PluginManager.get().getPluginPkgName() + ".MainActivity");
+//        intent.setClassName(PluginManager.get().getPluginPkgName(), "cn.vszone.ko.mobile.activity.KoLauncherActivity");
 
 //        intent.setClassName(getPackageName(), TestPluginActivity.class.getName());
 //        intent.setClassName("com.tony.phantom", "com.tony.phantom.TestPluginActivity");
